@@ -36,11 +36,13 @@
   };
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
-  users.users.bri = {
+  users = {
+    users.nixtop { 
     isNormalUser = true;
-    description = "bri";
+    description = "nixtop";
     extraGroups = [ "networkmanager" "wheel" ];
     packages = with pkgs; [];
+    };
   };
 
   # Allow unfree packages
@@ -85,14 +87,13 @@
   services.xserver = {
 	enable = true;
 	desktopManager = {
-		xterm.enable = true;
-		xfce.enable = true;
+
 	};
-	displayManager.defaultSession = "xfce";
-	libinput.enable = true;
-	libinput.tapping = true;
-	libinput.middleEmulation = true;
-	libinput.naturalScrolling = true;
+    displayManager.defaultSession = "xfce";
+    libinput.enable = true;
+    libinput.tapping = true;
+    libinput.middleEmulation = true;
+    libinput.naturalScrolling = true;
   };
 
   nix.sshServe.enable = true;
