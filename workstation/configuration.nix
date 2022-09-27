@@ -57,11 +57,9 @@ clangd
   # Select internationalisation properties.
   i18n.defaultLocale = "en_CA.utf8";
 
-  services.xserver.windowManager.openbox.enable = true;
-  services.xserver.windowManager.xmonad.enable = true;
   services.xserver.enable = true;
-  services.xserver.displayManager.lightdm.enable = true;
-  services.xserver.desktopManager.lxqt.enable = true;
+  services.xserver.displayManager.gdm.enable = true;
+  services.xserver.desktopManager.gnome.enable = true;
 
 
 
