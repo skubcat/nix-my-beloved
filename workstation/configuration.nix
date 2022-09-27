@@ -24,7 +24,9 @@ clangd
  
  
  
- 
+nixpkgs.config = {
+  allowUnfree = true;
+};
 
 {
   imports =
