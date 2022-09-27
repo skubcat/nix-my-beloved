@@ -5,6 +5,27 @@
 
 { config, pkgs, ... }:
 
+
+ /* 
+
+install these through home manager on neovim
+
+- fzf: OK
+- Vim-Goto-Header: OK
+- telescope.nvim: OK
+- plenary.nvim: OK
+- coc.nvim: OK
+
+clangd
+
+
+
+ */
+ 
+ 
+ 
+ 
+
 {
   imports =
     [ # Include the results of the hardware scan.
