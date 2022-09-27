@@ -128,6 +128,7 @@ clangd
     zathura
     vscode
     wget
+    nodejs
   ];
 
   virtualisation.docker.enable = true;
