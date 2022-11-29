@@ -1,0 +1,203 @@
+#+TITLE:System Config
+#+STARTUP: showeverything
+-----
+
+
+* Emacs Config
+** Initalize package
+#+begin_src emacs-lisp :tangle ~/.config/nixpkgs/emacs-conf.el
+(require 'package)
+(add-to-list 'package-archives '("gnu" . "https://elpa.gnu.org/packages/") t)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+(add-to-list 'package-archives '("nongnu" . "https://elpa.nongnu.org/nongnu/") t)
+(package-initialize)
+(when (not (package-installed-p 'use-package))
+  (package-refresh-contents)
+  (package-install 'use-package))
+#+end_src
+
+** Better defaults /imo/
+Turn off menu, scroll, and tool bar. 
+#+begin_src emacs-lisp :tangle ~/.config/nixpkgs/emacs-conf.el
+  (setq inhibit-startup-screen t):
+  
+  (scroll-bar-mode -1)
+  (menu-bar-mode -1)
+  (tool-bar-mode -1)
+  (setq org-startup-idented t)
+  (recentf-mode 1)
+#+end_src
+
+Tangles my emacs config and reloads it.
+#+begin_src emacs-lisp :tangle ~/.config/nixpkgs/emacs-conf.el
+  (defun reload-emacs-config ()
+      (interactive)
+      (org-babel-tangle)
+      (call-process "home-manager" nil 0 nil "switch"))
+#+end_src
+
+** Packages
+Pdf-tools for reading pdfs in emacs.
+#+begin_src emacs-lisp
+    (use-package pdf-tools)
+#+end_src
+
+Ebuku for bookmark management
+#+begin_src emacs-lisp
+    (use-package ebuku)
+#+end_src
+
+Theming
+#+begin_src emacs-lisp :tangle ~/.config/nixpkgs/emacs-conf.el
+    (use-package mindre-theme
+      :ensure t
+      :custom
+      (mindre-use-more-fading t)
+      (mindre-use-faded-lis-parens t)
+      :config
+      (load-theme 'mindre t))
+#+end_src
+
+God-mode to avoid emacs pinky.
+#+begin_src emacs-lisp :tangle ~/.config/nixpkgs/emacs-conf.el
+  (use-package god-mode)
+#+end_src
+
+Avy for easy motion
+#+begin_src emacs-lisp :tangle ~/.config/nixpkgs/emacs-conf.el
+  (use-package avy)
+  :config
+  (global-set-key (kbd "C-:") 'avy-goto-char)
+#+end_src
+
+Vterm to replace my terminal emulator.
+#+begin_src emacs-lisp :tangle ~/.config/nixpkgs/emacs-conf.el
+  (use-package vterm
+    :ensure t)
+#+end_src
+
+** Elfeed
+[[file:~/.config/nixpkgs/rss.org][rss.org]]
+#+BEGIN_SRC  org :tangle ~/.config/nixpkgs/rss.org
+  ,* Aggregate                                                          :elfeed:
+  ,** Reddit
+  ,***  https://www.reddit.com/r/kernel/.rss
+  ,***  https://www.reddit.com/r/planetemacs/.rss
+  ,***  https://www.reddit.com/r/orgmode/.rss
+  ,** Youtube
+
+#+END_SRC
+
+#+begin_src emacs-lisp :tangle ~/.config/nixpkgs/emacs-conf.el
+  (use-package elfeed)
+  (use-package elfeed-org)
+  (elfeed-org)
+  (setq rmh-elfeed-org-files (list "~/.config/nixpkgs/rss.org"))
+#+end_src
+
+** Org Config
+Couple notes: The "*setq org-hidden-keywords '(title date))*" is to hide the title and date on top of org files, for a nicer look.
+#+begin_src emacs-lisp :tangle ~/.config/nixpkgs/emacs-conf.el
+   (use-package org-superstar
+     :ensure
+     :after org)
+
+  (use-package org-modern
+    :ensure t
+    :config
+    (global-org-modern-mode))
+
+   (use-package org-roam
+     :ensure
+     :after org)
+   (setq org-return-follows-link t)
+   (setq org-hidden-keywords '(title date))
+   (setq org-startup-indented t)
+   (setq org-pretty-entities t)
+   (setq org-hide-emphasis-markers t)
+   (add-hook 'org-mode-hook 'org-superstar-mode 'org-indent-mode)
+
+   (org-babel-do-load-languages
+  'org-babel-load-languages
+  '((org . t)))
+ #+end_src
+** Dashboard
+#+begin_src emacs-lisp :tangle ~/.config/nixpkgs/emacs-conf.el
+  (use-package all-the-icons
+    :ensure t)
+#+end_src
+
+#+begin_src emacs-lisp :tangle ~/.config/nixpkgs/emacs-conf.el
+  (use-package dashboard
+    :ensure t
+    :config
+    (dashboard-setup-startup-hook))
+  (setq initial-buffer-choice (lambda () (get-buffer-create "*dashboard*")))
+  (setq dashboard-banner-logo-title "emacs :P")
+  (setq dashboard-center-content t)
+ #+end_src
+
+** Emacs Terminal
+Replace your terminal emulator with emacs.
+#+begin_src emacs-lisp :tangle ~/.config/nixpkgs/emacs-conf.el
+  (defun emacsterminal ()
+    (interactive)
+    (setq mode-line-format nil)
+    (vterm))
+#+end_src
+* Nix-flake Config
+** Flake schema
+The flake.nix file is a Nix file but that has special restrictions (more on that later).
+
+It has 4 top-level attributes:
+    * description is a string describing the flake.
+    * inputs is an attribute set of all the dependencies of the flake. The schema is described below.
+    * outputs is a function of one argument that takes an attribute set of all the realized inputs, and outputs another attribute set which schema is described below.
+    * nixConfig is an attribute set of values which reflect the values given to nix.conf. This can extend the normal behavior of a user's nix experience by adding flake-specific configuration, such as a binary cache.
+      
+** Code
+#+begin_src nix
+  {
+        description = "skubnix";
+
+        inputs = {
+          nixpkgs.url = "nixpkgs/nixos/22.05";
+          home-manager.url = "github:nix-community/home-manager/release-20.09";
+          home-manager.inputs.nixpkgs.follows = "nixpkgs";
+        };
+
+        outputs = { nixpkgs, home-manager, ... }: {
+          nixosConfigurations.nix_cat = { nixpkgs, home-manager, ... }:
+              system = "x86_64";
+              pkgs = import nixpkgs {
+                inherit system:
+                config = { allowUnfree = true; };
+
+              }:
+          };
+  }
+#+end_src
+
+* Emacs Derivation
+#+begin_src nix :tangle ~/Desktop/emacs-derivation/emacs.nix
+  { pkgs ? import <nixpkgs> {} }: 
+
+
+
+  let
+    myEmacs = pkgs.emacs; 
+    emacsWithPackages = (pkgs.emacsPackagesFor myEmacs).emacsWithPackages; 
+  in
+    emacsWithPackages (epkgs: (with epkgs.melpaStablePackages; [ 
+      magit          # ; Integrate git <C-x g>
+      zerodark-theme # ; Nicolas' theme
+    ]) ++ (with epkgs.elpaPackages; [ 
+      auctex         # ; LaTeX mode
+      beacon         # ; highlight my cursor when scrolling
+      nameless       # ; hide current package name everywhere in elisp code
+    ]) ++ [
+      pkgs.notmuch   # From main packages set 
+
+
+    ])
+#+end_src
