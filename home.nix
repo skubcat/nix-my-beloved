@@ -1,109 +1,84 @@
-{ config, pkgs, lib, ... }:
-
-
 {
-
-
+  config,
+  pkgs,
+  lib,
+  ...
+}: {
   home.username = "brianna";
   home.homeDirectory = "/home/brianna";
   home.stateVersion = "22.05";
 
   programs.home-manager.enable = true;
   programs.fzf.enable = true;
-  programs.bat.enable = true;
-  programs.zsh = {
-    enable = true;
-    defaultKeymap = "viins";
-    enableSyntaxHighlighting = true;
-    enableCompletion = true; 
-  };
 
-  home.file.".emacs.d" = {
-    source = ./catmacs.d;
+  home.file."/home/brianna/.emacs" = {
+    source = ./emacs-conf.el;
     recursive = true;
   };
 
-  programs.emacs.enable = true;
-  programs.emacs.extraPackages = epkgs: (with epkgs; [
-    nix-mode
-    rtags
-    auto-complete-clang
-    use-package-ensure-system-package
-    use-package
-    auto-compile
-    pdf-tools
-    nov
-    evil
-    evil-collection
-    beacon
-    powerline
-    elfeed
-    flycheck-aspell
-    solarized-theme
-    lsp-mode
-    company
-    treemacs
-    disaster
-    sly
-    all-the-icons
-    go-mode
-    org-chef
-    centaur-tabs
-    dirvish
-    magit
-  ]);
+  services.emacs.enable = true;
 
-
-  services.dunst = {
+  programs.mu = {
     enable = true;
-    iconTheme =  
-    {
-      name = "Papirus-Dark";
-      package = pkgs.papirus-icon-theme;
-    };
   };
-  services.dunst.settings = {
+  
+  programs.emacs = {
+    enable = true;
+    extraPackages = epkgs: (with epkgs; [
+      ebuku
+      vterm
+      org-modern
+      mindre-theme
+      all-the-icons
+      avy
+      god-mode
+      dashboard
+      format-all
+      org-superstar
+      writeroom-mode
+      olivetti
+      pocket-reader
+      company-math
+      counsel
+      nix-mode
+      rtags
+      auto-complete-clang
+      use-package-ensure-system-package
+      use-package
+      auto-compile
+      pdf-tools
+      nov
+      evil
+      evil-collection
+      beacon
+      powerline
+      elfeed
+      elfeed-org
+      flycheck-aspell
+      solarized-theme
+      lsp-mode
+      company
+      treemacs
+      disaster
+      sly
+      all-the-icons
+      go-mode
+      org-chef
+      centaur-tabs
+      dirvish
+      doom-themes
+      magit
+    ]);
+  };
 
+
+  services.dunst.settings = {
     global = {
       markup = "full";
       format = ''
-      %s %p %I 
-      %b'';
+        %s %p %I
+        %b'';
       word_wrap = true;
-
     };
   };
-
-
-
-  services.picom = {
-    enable = true;
-
-  };
-
-  programs.neovim = {
-    enable = true;
-    plugins = with pkgs.vimPlugins; 
-    [ 
-      # lisp<-
-      vim-sexp
-      vim-better-whitespace      
-      dashboard-nvim
-      vim-nerdtree-tabs
-      telescope-nvim
-      nvim-fzf
-      vim-lastplace
-      multiple-cursors
-      vim-nix
-    ];
-
-    extraConfig = ''
-
-      
-
-      set number
-      set mouse=a
-    '';
-  };
-
 }
